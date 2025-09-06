@@ -47,7 +47,7 @@ public class ObjectSpawner : MonoBehaviour
         SpawnPoint freePoint = null;
         foreach (var point in group.spawnPoints)
         {
-            if (!point.isOccupied)
+            if (point.isOccupied == false)
             {
                 freePoint = point;
                 break;
@@ -70,10 +70,6 @@ public class ObjectSpawner : MonoBehaviour
                 freePoint.isOccupied = false;
             };
         }
-        else
-        {
-            Debug.LogWarning($"Spawned object {spawnedObj.name} doesn't implement ISpawnable interface");
-        }
     }
 
     public void SpawnObjectManually(int groupIndex, int pointIndex)
@@ -81,10 +77,12 @@ public class ObjectSpawner : MonoBehaviour
         if (groupIndex >= 0 && groupIndex < _spawnGroups.Length)
         {
             var group = _spawnGroups[groupIndex];
+
             if (pointIndex >= 0 && pointIndex < group.spawnPoints.Length)
             {
                 var point = group.spawnPoints[pointIndex];
-                if (!point.isOccupied)
+
+                if (point.isOccupied == false)
                 {
                     GameObject spawnedObj = Instantiate(group.prefab, point.point.position, point.point.rotation);
                     group.spawnedObjects.Add(spawnedObj);

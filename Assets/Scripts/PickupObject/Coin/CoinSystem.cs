@@ -24,6 +24,19 @@ public class CoinSystem : MonoBehaviour
         OnCoinsUpdated?.Invoke(_totalCoins);
     }
 
+    public bool SpendCoins(int amount)
+    {
+        if (_totalCoins >= amount)
+        {
+            _totalCoins -= amount;
+            OnCoinsUpdated?.Invoke(_totalCoins);
+
+            return true;
+        }
+
+        return false;
+    }
+
     public int GetTotalCoins()
     {
         return _totalCoins;
