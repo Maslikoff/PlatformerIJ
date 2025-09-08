@@ -23,7 +23,7 @@ public class Jumper : MonoBehaviour
     {
         bool canJump = Time.time - _lastGroundedTime <= _groundedLeeway || _groundDetector.IsGrounded;
 
-        if (canJump && !_isJumping)
+        if (canJump && _isJumping == false)
         {
             _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, _jumpForce);
             _isJumping = true;

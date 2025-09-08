@@ -2,6 +2,6 @@ using System;
 
 public interface ISpawnable
 {
-    event Action<ISpawnable> OnDespawn;
+    event Action<ISpawnable> Spawned;
     void Despawn();
 }

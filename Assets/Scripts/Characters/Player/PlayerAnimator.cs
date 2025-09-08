@@ -8,29 +8,18 @@ public class PlayerAnimator : MonoBehaviour
     private static readonly int IsGrounded = Animator.StringToHash("isGrounded");
 
     private Animator _animator;
-    private Mover _mover;
-    private Jumper _jumper;
-    private GroundDetector _groundDetector;
 
     private void Awake()
     {
         _animator = GetComponent<Animator>();
-        _mover = GetComponent<Mover>();
-        _jumper = GetComponent<Jumper>();
-        _groundDetector = GetComponent<GroundDetector>();
     }
 
-    private void Update()
+    public void UpdateAnimations(bool isMoving, bool isJumping, bool isGrounded)
     {
-        UpdateAnimations();
-    }
+        _animator.SetBool(IsRun, isMoving);
+        _animator.SetBool(IsGrounded, isGrounded);
 
-    private void UpdateAnimations()
-    {
-        _animator.SetBool(IsRun, _mover.IsMoving);
-        _animator.SetBool(IsGrounded, _groundDetector.IsGrounded);
-
-        if (_jumper.IsJumping)
+        if (isJumping)
             _animator.SetTrigger(IsJump);
     }
 }

@@ -5,33 +5,17 @@ using UnityEngine;
 
 public class ObjectSpawner : MonoBehaviour
 {
-    [System.Serializable]
-    public class SpawnPoint
-    {
-        public Transform point;
-        public bool isOccupied;
-    }
-
-    [System.Serializable]
-    public class SpawnGroup
-    {
-        public GameObject prefab;
-        public int maxCount = 5;
-        public float spawnInterval = 3f;
-        public SpawnPoint[] spawnPoints;
-        [HideInInspector] public List<GameObject> spawnedObjects = new List<GameObject>();
-    }
-
-    [Header("Spawn Settings")]
     [SerializeField] private SpawnGroup[] _spawnGroups;
 
-    private Dictionary<GameObject, SpawnPoint> _spawnPointMap = new Dictionary<GameObject, SpawnPoint>();
-    private Dictionary<GameObject, System.Action> _despawnHandlers = new Dictionary<GameObject, System.Action>();
+    private Dictionary<ISpawnable, SpawnPoint> _spawnPointMap = new Dictionary<ISpawnable, SpawnPoint>();
+    private Dictionary<ISpawnable, Action> _despawnHandlers = new Dictionary<ISpawnable, Action>();
+    private Dictionary<SpawnGroup, WaitForSeconds> _waitIntervals = new Dictionary<SpawnGroup, WaitForSeconds>();
 
     private void Start()
     {
         foreach (var group in _spawnGroups)
         {
+            _waitIntervals[group] = new WaitForSeconds(group.spawnInterval);
             StartCoroutine(SpawnRoutine(group));
         }
     }
@@ -40,83 +24,94 @@ public class ObjectSpawner : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(group.spawnInterval);
+            yield return _waitIntervals[group];
 
             if (group.spawnedObjects.Count < group.maxCount)
                 TrySpawnObject(group);
         }
     }
 
-    private void TrySpawnObject(SpawnGroup group)
+    private bool TrySpawnObject(SpawnGroup group)
     {
-        SpawnPoint freePoint = null;
-
-        foreach (var point in group.spawnPoints)
-        {
-            if (point.isOccupied == false)
-            {
-                freePoint = point;
-                break;
-            }
-        }
+        SpawnPoint freePoint = FindFreeSpawnPoint(group.spawnPoints);
 
         if (freePoint == null) 
-            return;
+            return false;
 
         GameObject spawnedObj = Instantiate(group.prefab, freePoint.point.position, freePoint.point.rotation);
-        group.spawnedObjects.Add(spawnedObj);
-        freePoint.isOccupied = true;
-        _spawnPointMap.Add(spawnedObj, freePoint);
+        ISpawnable spawnableComponent = spawnedObj.GetComponent<ISpawnable>();
 
-        var spawnable = spawnedObj.GetComponent<ISpawnable>();
-
-        if (spawnable != null)
+        if (spawnableComponent == null)
         {
-            Action<ISpawnable> despawnHandler = (spawnableObj) => HandleDespawn(spawnableObj, group, spawnedObj);
-            spawnable.OnDespawn += despawnHandler;
-
-            _despawnHandlers.Add(spawnedObj, () => spawnable.OnDespawn -= despawnHandler);
+            Destroy(spawnedObj);
+            return false;
         }
+
+        group.spawnedObjects.Add(spawnableComponent);
+        freePoint.isOccupied = true;
+        _spawnPointMap.Add(spawnableComponent, freePoint);
+
+        RegisterSpawnableObject(spawnableComponent, group);
+        return true;
     }
 
-    private void HandleDespawn(ISpawnable spawnable, SpawnGroup group, GameObject spawnedObj)
+    private SpawnPoint FindFreeSpawnPoint(SpawnPoint[] spawnPoints)
     {
-        if (_spawnPointMap.TryGetValue(spawnedObj, out SpawnPoint point))
+        foreach (var point in spawnPoints)
+            if (point.isOccupied == false)
+                return point;
+
+        return null;
+    }
+
+    private void RegisterSpawnableObject(ISpawnable spawnable, SpawnGroup group)
+    {
+        Action<ISpawnable> despawnHandler = (spawnableObj) => HandleDespawn(spawnableObj, group);
+        spawnable.Spawned += despawnHandler;
+
+        _despawnHandlers.Add(spawnable, () => spawnable.Spawned -= despawnHandler);
+    }
+
+    private void HandleDespawn(ISpawnable spawnable, SpawnGroup group)
+    {
+        if (_spawnPointMap.TryGetValue(spawnable, out SpawnPoint point))
         {
             point.isOccupied = false;
-            _spawnPointMap.Remove(spawnedObj);
+            _spawnPointMap.Remove(spawnable);
         }
 
-        group.spawnedObjects.Remove(spawnedObj);
+        group.spawnedObjects.Remove(spawnable);
 
-        if (_despawnHandlers.TryGetValue(spawnedObj, out System.Action unsubscribeAction))
+        if (_despawnHandlers.TryGetValue(spawnable, out Action unsubscribeAction))
         {
             unsubscribeAction();
-            _despawnHandlers.Remove(spawnedObj);
+            _despawnHandlers.Remove(spawnable);
         }
     }
 
-    public void SpawnObjectManually(int groupIndex, int pointIndex)
+    public bool SpawnObjectManually(int groupIndex, int pointIndex)
     {
-        if (groupIndex >= 0 && groupIndex < _spawnGroups.Length)
-        {
-            var group = _spawnGroups[groupIndex];
+        if (groupIndex < 0 || groupIndex >= _spawnGroups.Length)
+            return false;
 
-            if (pointIndex >= 0 && pointIndex < group.spawnPoints.Length)
-            {
-                var point = group.spawnPoints[pointIndex];
+        var group = _spawnGroups[groupIndex];
 
-                if (point.isOccupied == false)
-                    TrySpawnObject(group);
-            }
-        }
+        if (pointIndex < 0 || pointIndex >= group.spawnPoints.Length)
+            return false;
+
+        var point = group.spawnPoints[pointIndex];
+
+        if (point.isOccupied)
+            return false;
+
+        return TrySpawnObject(group);
     }
 
     private void OnDestroy()
     {
         foreach (var handler in _despawnHandlers.Values)
-            handler();
-  
+            handler?.Invoke();
+
         _despawnHandlers.Clear();
         _spawnPointMap.Clear();
     }

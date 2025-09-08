@@ -6,10 +6,16 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     private InputReader _inputReader;
+    private Attacker _attacker;
     private Mover _mover;
     private Jumper _jumper;
     private Flipper _flipper;
     private PlayerAnimator _playerAnimator;
+    private GroundDetector _groundDetector;
+
+    public bool IsMoving => _mover.IsMoving;
+    public bool IsJumping => _jumper.IsJumping;
+    public bool IsGrounded => _groundDetector.IsGrounded;
 
     private void Awake()
     {
@@ -18,24 +24,28 @@ public class Player : MonoBehaviour
         _jumper = GetComponent<Jumper>();
         _flipper = GetComponent<Flipper>();
         _playerAnimator = GetComponent<PlayerAnimator>();
+        _groundDetector = GetComponent<GroundDetector>();
     }
 
     private void OnEnable()
     {
-        _inputReader.OnMoveInput += HandleMoveInput;
-        _inputReader.OnJumpInput += HandleJumpInput;
+        _inputReader.MoveInput += HandleMoveInput;
+        _inputReader.JumpInput += HandleJumpInput;
+        _inputReader.AttackInput += HandleAttackInput;
     }
 
     private void OnDisable()
     {
-        _inputReader.OnMoveInput -= HandleMoveInput;
-        _inputReader.OnJumpInput -= HandleJumpInput;
+        _inputReader.MoveInput -= HandleMoveInput;
+        _inputReader.JumpInput -= HandleJumpInput;
+        _inputReader.AttackInput -= HandleAttackInput;
     }
 
     private void FixedUpdate()
     {
         _mover.Move();
         _jumper.CheckGroundedStatus();
+        _playerAnimator.UpdateAnimations(IsMoving, IsJumping, IsGrounded);
     }
 
     private void HandleMoveInput(float direction)
@@ -47,5 +57,10 @@ public class Player : MonoBehaviour
     private void HandleJumpInput()
     {
         _jumper.TryJump();
+    }
+
+    private void HandleAttackInput()
+    {
+        //_attacker.Attack()
     }
 }

@@ -20,18 +20,4 @@ public class Flipper : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, _facingRight ? 0 : 180, 0);
         }
     }
-
-    public void UpdateFacingDirection(Vector2 movementDirection)
-    {
-        if (movementDirection.magnitude > _directionThreshold)
-        {
-            bool shouldFaceRight = movementDirection.x > 0;
-
-            if (shouldFaceRight != _facingRight)
-            {
-                _facingRight = shouldFaceRight;
-                transform.rotation = Quaternion.Euler(0, _facingRight ? 0 : 180, 0);
-            }
-        }
-    }
 }

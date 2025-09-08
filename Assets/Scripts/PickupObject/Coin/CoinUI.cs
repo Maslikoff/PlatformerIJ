@@ -11,13 +11,13 @@ public class CoinUI : MonoBehaviour
     private void Start()
     {
         _coinText.text = _coinSystem.TotalCoins.ToString();
-        _coinSystem.OnCoinsUpdated += UpdateCoinText;
+        _coinSystem.CoinsUpdated += UpdateCoinText;
     }
 
     private void OnDisable()
     {
         if (_coinSystem != null)
-            _coinSystem.OnCoinsUpdated -= UpdateCoinText;
+            _coinSystem.CoinsUpdated -= UpdateCoinText;
     }
 
     private void UpdateCoinText(int amount)

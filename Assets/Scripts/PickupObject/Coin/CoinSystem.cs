@@ -5,19 +5,19 @@ public class CoinSystem : MonoBehaviour
 {
     public int TotalCoins { get; private set; } = 0;
 
-    public event Action<int> OnCoinsUpdated;
+    public event Action<int> CoinsUpdated;
 
     public void Initialize(int initialCoins = 0)
     {
         TotalCoins = initialCoins;
-        OnCoinsUpdated?.Invoke(TotalCoins);
+        CoinsUpdated?.Invoke(TotalCoins);
     }
 
     public void AddCoin(int amount)
     {
         TotalCoins += amount;
 
-        OnCoinsUpdated?.Invoke(TotalCoins);
+        CoinsUpdated?.Invoke(TotalCoins);
     }
 
     public bool SpendCoins(int amount)
@@ -25,7 +25,7 @@ public class CoinSystem : MonoBehaviour
         if (TotalCoins >= amount)
         {
             TotalCoins -= amount;
-            OnCoinsUpdated?.Invoke(TotalCoins);
+            CoinsUpdated?.Invoke(TotalCoins);
 
             return true;
         }
