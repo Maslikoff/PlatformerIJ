@@ -8,7 +8,7 @@ public class Coin : MonoBehaviour, ISpawnable
     [SerializeField] private float _rotationSpeed = 100f;
     [SerializeField] private ParticleSystem _collectEffect;
 
-    public event Action OnDespawn;
+    public event Action<ISpawnable> OnDespawn;
 
     public int Value => _value;
 
@@ -25,7 +25,7 @@ public class Coin : MonoBehaviour, ISpawnable
 
     public void Despawn()
     {
-        OnDespawn?.Invoke();
+        OnDespawn?.Invoke(this);
         Destroy(gameObject);
     }
 }

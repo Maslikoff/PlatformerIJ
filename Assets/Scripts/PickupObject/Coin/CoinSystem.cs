@@ -3,42 +3,33 @@ using UnityEngine;
 
 public class CoinSystem : MonoBehaviour
 {
-    public static CoinSystem Instance { get; private set; }
-
-    private int _totalCoins = 0;
+    public int TotalCoins { get; private set; } = 0;
 
     public event Action<int> OnCoinsUpdated;
 
-    private void Awake()
+    public void Initialize(int initialCoins = 0)
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
+        TotalCoins = initialCoins;
+        OnCoinsUpdated?.Invoke(TotalCoins);
     }
 
     public void AddCoin(int amount)
     {
-        _totalCoins += amount;
+        TotalCoins += amount;
 
-        OnCoinsUpdated?.Invoke(_totalCoins);
+        OnCoinsUpdated?.Invoke(TotalCoins);
     }
 
     public bool SpendCoins(int amount)
     {
-        if (_totalCoins >= amount)
+        if (TotalCoins >= amount)
         {
-            _totalCoins -= amount;
-            OnCoinsUpdated?.Invoke(_totalCoins);
+            TotalCoins -= amount;
+            OnCoinsUpdated?.Invoke(TotalCoins);
 
             return true;
         }
 
         return false;
-    }
-
-    public int GetTotalCoins()
-    {
-        return _totalCoins;
     }
 }

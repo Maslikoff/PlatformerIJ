@@ -12,10 +12,10 @@ public class PlayerCoinCollector : MonoBehaviour
 
     private void CollectCoin(Coin coin)
     {
-        CoinSystem.Instance?.AddCoin(coin.Value);
+        CoinSystem _coinSystem = FindObjectOfType<CoinSystem>();
 
+        _coinSystem?.AddCoin(coin.Value);
         coin.PlayCollectEffect();
-
         coin.Despawn();
     }
 }
