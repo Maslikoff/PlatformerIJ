@@ -6,7 +6,7 @@ public class Patroller : MonoBehaviour
 {
     [SerializeField] private Transform[] _patrolPoints;
     [SerializeField] private float _waitTimeAtPoint = 2f;
-    [SerializeField] private float _reachThreshold = 0.1f;
+    [SerializeField] private float _reachThreshold = 1f;
     [SerializeField] private bool _loopPatrol = true;
 
     private int _currentPointIndex = 0;
@@ -29,7 +29,6 @@ public class Patroller : MonoBehaviour
             {
                 if (point == null)
                 {
-                    Debug.LogError("One of patrol points is null!", this);
                     enabled = false;
                     return;
                 }
@@ -75,7 +74,6 @@ public class Patroller : MonoBehaviour
         }
         else
         {
-            // Движение вперед-назад
             if (_isMovingForward)
             {
                 _currentPointIndex++;
