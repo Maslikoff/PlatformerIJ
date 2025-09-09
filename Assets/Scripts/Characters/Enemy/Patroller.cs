@@ -2,98 +2,92 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Patroller
+public class Patroller : MonoBehaviour
 {
-    private Transform[] _waypoints;
-    private Mover _mover;
-    private Flipper _flipper;
-    private Coroutine _patrolCoroutine;
+    [SerializeField] private Transform[] _patrolPoints;
+    [SerializeField] private float _waitTimeAtPoint = 2f;
+    [SerializeField] private float _reachThreshold = 0.1f;
+    [SerializeField] private bool _loopPatrol = true;
 
-    private float _waitTime = 2f;
-    private float _reachThreshold = 0.1f;
+    private int _currentPointIndex = 0;
+    private bool _isWaiting = false;
+    private bool _isMovingForward = true;
+    private float _direction;
 
-    public bool IsPatrolling { get; private set; }
-    public Vector2 CurrentDirection { get; private set; }
-    public float WaitTime => _waitTime;
+    public float Direction => _direction;
+    public bool IsWaiting => _isWaiting;
+    public bool HasPoints => _patrolPoints != null && _patrolPoints.Length > 0;
+    public Transform CurrentTarget => HasPoints ? _patrolPoints[_currentPointIndex] : null;
 
-    public void Initialize(Transform[] waypoints, Mover mover, Flipper flipper)
+    private void Start()
     {
-        SetWaypoints(waypoints);
-        _mover = mover;
-        _flipper = flipper;
+        if (HasPoints == false)
+            enabled = false;
+        else
+        {
+            foreach (var point in _patrolPoints)
+            {
+                if (point == null)
+                {
+                    Debug.LogError("One of patrol points is null!", this);
+                    enabled = false;
+                    return;
+                }
+            }
+        }
     }
 
-    public void StartPatrol()
+    public void UpdatePatrol()
     {
-        if (_waypoints == null || _waypoints.Length == 0)
+        if (_isWaiting || HasPoints == false) 
             return;
 
-        if (_patrolCoroutine != null)
-            StopPatrol();
+        Vector2 currentPosition = transform.position;
+        Vector2 targetPosition = _patrolPoints[_currentPointIndex].position;
 
-        _patrolCoroutine = _mover.StartCoroutine(PatrolRoutine());
-    }
+        float distanceToTarget = Vector2.Distance(currentPosition, targetPosition);
 
-    public void StopPatrol()
-    {
-        if (_patrolCoroutine != null)
+        if (distanceToTarget <= _reachThreshold)
         {
-            _mover.StopCoroutine(_patrolCoroutine);
-            _patrolCoroutine = null;
+            StartCoroutine(WaitAtPoint());
+            return;
         }
 
-        IsPatrolling = false;
-        _mover.Stop();
-        CurrentDirection = Vector2.zero;
+        _direction = Mathf.Sign(targetPosition.x - currentPosition.x);
     }
 
-    private IEnumerator PatrolRoutine()
+    private IEnumerator WaitAtPoint()
     {
-        IsPatrolling = true;
-        int currentWaypointIndex = 0;
+        _isWaiting = true;
+        _direction = 0f;
 
-        while (IsPatrolling && _waypoints != null && _waypoints.Length > 0)
+        yield return new WaitForSeconds(_waitTimeAtPoint);
+
+        MoveToNextPoint();
+        _isWaiting = false;
+    }
+
+    private void MoveToNextPoint()
+    {
+        if (_loopPatrol)
         {
-            Vector2 targetPosition = _waypoints[currentWaypointIndex].position;
-
-            while (Vector2.Distance(_mover.transform.position, targetPosition) > _reachThreshold && IsPatrolling)
-            {
-                CurrentDirection = (targetPosition - (Vector2)_mover.transform.position).normalized;
-                _mover.SetDirection(CurrentDirection.x);
-                _mover.Move();
-                _flipper.UpdateFacingDirection(CurrentDirection.x);
-                yield return null;
-            }
-
-            if (IsPatrolling == false)
-                yield break;
-
-            _mover.Stop();
-
-            yield return new WaitForSeconds(_waitTime);
-
-            if (IsPatrolling == false)
-                yield break;
-
-            currentWaypointIndex = (currentWaypointIndex + 1) % _waypoints.Length;
+            _currentPointIndex = (_currentPointIndex + 1) % _patrolPoints.Length;
         }
-    }
-
-    public void SetWaitTime(float waitTime)
-    {
-        _waitTime = Mathf.Max(0f, waitTime);
-    }
-
-    public void SetWaypoints(Transform[] waypoints)
-    {
-        if (waypoints != null && waypoints.Length > 0)
-            _waypoints = waypoints;
         else
-            _waypoints = null;
-    }
-
-    public bool HasWaypoints()
-    {
-        return _waypoints != null && _waypoints.Length > 0;
+        {
+            // Движение вперед-назад
+            if (_isMovingForward)
+            {
+                _currentPointIndex++;
+                if (_currentPointIndex >= _patrolPoints.Length - 1)
+                    _isMovingForward = false;
+            }
+            else
+            {
+                _currentPointIndex--;
+                if (_currentPointIndex <= 0)
+                    _isMovingForward = true;
+            }
+        }
     }
 }

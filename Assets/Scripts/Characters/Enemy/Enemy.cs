@@ -1,67 +1,52 @@
 using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(Mover), typeof(Flipper), typeof(Chaser))]
+[RequireComponent(typeof(Mover))]
+[RequireComponent(typeof(Flipper))]
+[RequireComponent(typeof(Patroller))]
+[RequireComponent(typeof(EnemyAnimator))]
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private Transform[] _waypoints;
-    [SerializeField] private float _waitTimeAtPoint = 2f;
-
     private Mover _mover;
     private Flipper _flipper;
     private Patroller _patroller;
-
-    public float WaitTimeAtPoint
-    {
-        get => _waitTimeAtPoint;
-        set
-        {
-            _waitTimeAtPoint = value;
-
-            if (_patroller != null)
-                _patroller.SetWaitTime(_waitTimeAtPoint);
-        }
-    }
+    private EnemyAnimator _enemyAnimator;
 
     private void Awake()
     {
         _mover = GetComponent<Mover>();
         _flipper = GetComponent<Flipper>();
-        _patroller = new Patroller();
+        _patroller = GetComponent<Patroller>();
+        _enemyAnimator = GetComponent<EnemyAnimator>();
     }
 
-    private void Start()
+    private void Update()
     {
-        InitializePatroller();
+        if (_patroller.HasPoints == false) 
+            return;
+
+        _patroller.UpdatePatrol();
+        HandleMovement();
+        UpdateAnimations();
     }
 
-    private void InitializePatroller()
+    private void HandleMovement()
     {
-        if (_waypoints != null && _waypoints.Length > 0)
+        if (_patroller.IsWaiting)
         {
-            _patroller.Initialize(_waypoints, _mover, _flipper);
-            _patroller.SetWaitTime(_waitTimeAtPoint);
-            _patroller.StartPatrol();
+            _mover.Stop();
+        }
+        else
+        {
+            _mover.SetDirection(_patroller.Direction);
+            _mover.Move();
+            _flipper.UpdateFacingDirection(_patroller.Direction);
         }
     }
 
-    private void OnEnable()
+    private void UpdateAnimations()
     {
-        if (_patroller != null && _patroller.HasWaypoints())
-        {
-            _patroller.StartPatrol();
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (_patroller != null)
-            _patroller.StopPatrol();
-    }
-
-    private void OnDestroy()
-    {
-        if (_patroller != null)
-            _patroller.StopPatrol();
+        bool isMoving = !_patroller.IsWaiting && _patroller.HasPoints;
+        _enemyAnimator.UpdateAnimations(isMoving);
     }
 }

@@ -1,8 +1,12 @@
 using UnityEngine;
 
-[RequireComponent(typeof(InputReader), typeof(Mover), typeof(Jumper))]
-[RequireComponent(typeof(PlayerAnimator))]
+[RequireComponent(typeof(InputReader))]
+[RequireComponent(typeof(Attacker))]
+[RequireComponent(typeof(Mover))]
+[RequireComponent(typeof(Jumper))]
 [RequireComponent(typeof(Flipper))]
+[RequireComponent(typeof(PlayerAnimator))]
+[RequireComponent(typeof(GroundDetector))]
 public class Player : MonoBehaviour
 {
     private InputReader _inputReader;
@@ -16,10 +20,12 @@ public class Player : MonoBehaviour
     public bool IsMoving => _mover.IsMoving;
     public bool IsJumping => _jumper.IsJumping;
     public bool IsGrounded => _groundDetector.IsGrounded;
+    public bool IsAttacking { get; private set; }
 
     private void Awake()
     {
         _inputReader = GetComponent<InputReader>();
+        _attacker = GetComponent<Attacker>();
         _mover = GetComponent<Mover>();
         _jumper = GetComponent<Jumper>();
         _flipper = GetComponent<Flipper>();
@@ -32,6 +38,7 @@ public class Player : MonoBehaviour
         _inputReader.MoveInput += HandleMoveInput;
         _inputReader.JumpInput += HandleJumpInput;
         _inputReader.AttackInput += HandleAttackInput;
+        _attacker.OnAttack += HandleAttackInput;
     }
 
     private void OnDisable()
@@ -39,13 +46,13 @@ public class Player : MonoBehaviour
         _inputReader.MoveInput -= HandleMoveInput;
         _inputReader.JumpInput -= HandleJumpInput;
         _inputReader.AttackInput -= HandleAttackInput;
+        _attacker.OnAttack -= HandleAttackInput;
     }
 
     private void FixedUpdate()
     {
         _mover.Move();
-        _jumper.CheckGroundedStatus();
-        _playerAnimator.UpdateAnimations(IsMoving, IsJumping, IsGrounded);
+        _playerAnimator.UpdateAnimations(IsMoving, IsJumping, IsGrounded, IsAttacking);
     }
 
     private void HandleMoveInput(float direction)
@@ -56,11 +63,13 @@ public class Player : MonoBehaviour
 
     private void HandleJumpInput()
     {
+        _jumper.CheckGroundedStatus();
         _jumper.TryJump();
     }
 
     private void HandleAttackInput()
     {
-        //_attacker.Attack()
+        IsAttacking = true;
+        _playerAnimator.PlayAttackAnimation();
     }
 }
