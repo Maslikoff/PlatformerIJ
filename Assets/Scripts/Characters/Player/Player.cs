@@ -52,24 +52,31 @@ public class Player : MonoBehaviour
     private void FixedUpdate()
     {
         _mover.Move();
-        _playerAnimator.UpdateAnimations(IsMoving, IsJumping, IsGrounded, IsAttacking);
     }
 
     private void HandleMoveInput(float direction)
     {
         _mover.SetDirection(direction);
         _flipper.UpdateFacingDirection(direction);
+        UpdateAnimation();
     }
 
     private void HandleJumpInput()
     {
         _jumper.CheckGroundedStatus();
         _jumper.TryJump();
+        UpdateAnimation();
     }
 
     private void HandleAttackInput()
     {
         IsAttacking = true;
         _playerAnimator.PlayAttackAnimation();
+        UpdateAnimation();
+    }
+
+    private void UpdateAnimation()
+    {
+        _playerAnimator.UpdateAnimations(IsMoving, IsJumping, IsGrounded, IsAttacking);
     }
 }

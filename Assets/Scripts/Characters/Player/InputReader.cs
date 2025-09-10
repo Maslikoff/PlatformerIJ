@@ -10,13 +10,13 @@ public class InputReader : MonoBehaviour
 
     private void Update()
     {
-        float horizontal = Input.GetAxisRaw(InputConstants.HORIZONTAL_AXIS);
+        float horizontal = Input.GetAxisRaw(InputConstants.HorizontalAxis);
         MoveInput?.Invoke(horizontal);
 
-        if (Input.GetButtonDown(InputConstants.JUMP_BUTTON))
+        if (Input.GetButtonDown(InputConstants.JumpButton))
             JumpInput?.Invoke();
 
-        if (Input.GetButtonDown(InputConstants.ATTACK_BUTTON))
+        if (Input.GetButtonDown(InputConstants.AttackButton))
             AttackInput?.Invoke();
     }
 }

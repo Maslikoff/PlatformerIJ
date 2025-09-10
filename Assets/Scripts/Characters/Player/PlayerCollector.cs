@@ -5,6 +5,8 @@ using UnityEngine.Playables;
 
 public class PlayerCollector : MonoBehaviour
 {
+    [SerializeField] private CoinSystem _coinSystem;
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.TryGetComponent<Coin>(out var coin))
@@ -16,8 +18,6 @@ public class PlayerCollector : MonoBehaviour
 
     private void CollectCoin(Coin coin)
     {
-        CoinSystem _coinSystem = FindObjectOfType<CoinSystem>();
-
         _coinSystem?.AddCoin(coin.Value);
         coin.PlayCollectEffect();
         coin.Despawn();

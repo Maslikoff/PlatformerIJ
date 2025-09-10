@@ -18,6 +18,8 @@ public class Mover : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody2D>();
     }
 
+    public float GetMoveSpeed() => _moveSpeed;
+
     public void SetDirection(float direction)
     {
         _direction = Mathf.Clamp(direction, -1f, 1f);

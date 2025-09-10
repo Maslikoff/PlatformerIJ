@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 
-[System.Serializable]
-public class SpawnPoint
+public class SpawnPoint : MonoBehaviour
 {
-    public Transform point;
-    public bool isOccupied;
+    [field: SerializeField] public Transform Point { get; private set; }
+    public bool IsOccupied { get; set; }
 }

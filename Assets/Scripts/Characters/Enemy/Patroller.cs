@@ -12,9 +12,8 @@ public class Patroller : MonoBehaviour
     private int _currentPointIndex = 0;
     private bool _isWaiting = false;
     private bool _isMovingForward = true;
-    private float _direction;
 
-    public float Direction => _direction;
+    public float Direction { get; private set; }
     public bool IsWaiting => _isWaiting;
     public bool HasPoints => _patrolPoints != null && _patrolPoints.Length > 0;
     public Transform CurrentTarget => HasPoints ? _patrolPoints[_currentPointIndex] : null;
@@ -22,7 +21,9 @@ public class Patroller : MonoBehaviour
     private void Start()
     {
         if (HasPoints == false)
+        {
             enabled = false;
+        }
         else
         {
             foreach (var point in _patrolPoints)
@@ -38,7 +39,7 @@ public class Patroller : MonoBehaviour
 
     public void UpdatePatrol()
     {
-        if (_isWaiting || HasPoints == false) 
+        if (_isWaiting || HasPoints == false)
             return;
 
         Vector2 currentPosition = transform.position;
@@ -52,13 +53,13 @@ public class Patroller : MonoBehaviour
             return;
         }
 
-        _direction = Mathf.Sign(targetPosition.x - currentPosition.x);
+        Direction = Mathf.Sign(targetPosition.x - currentPosition.x);
     }
 
     private IEnumerator WaitAtPoint()
     {
         _isWaiting = true;
-        _direction = 0f;
+        Direction = 0f;
 
         yield return new WaitForSeconds(_waitTimeAtPoint);
 

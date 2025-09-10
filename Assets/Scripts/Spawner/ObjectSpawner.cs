@@ -15,7 +15,7 @@ public class ObjectSpawner : MonoBehaviour
     {
         foreach (var group in _spawnGroups)
         {
-            _waitIntervals[group] = new WaitForSeconds(group.spawnInterval);
+            _waitIntervals[group] = new WaitForSeconds(group.SpawnInterval);
             StartCoroutine(SpawnRoutine(group));
         }
     }
@@ -26,19 +26,19 @@ public class ObjectSpawner : MonoBehaviour
         {
             yield return _waitIntervals[group];
 
-            if (group.spawnedObjects.Count < group.maxCount)
+            if (group.SpawnedObjects.Count < group.MaxCount)
                 TrySpawnObject(group);
         }
     }
 
     private bool TrySpawnObject(SpawnGroup group)
     {
-        SpawnPoint freePoint = FindFreeSpawnPoint(group.spawnPoints);
+        SpawnPoint freePoint = FindFreeSpawnPoint(group.SpawnPoints);
 
         if (freePoint == null) 
             return false;
 
-        GameObject spawnedObj = Instantiate(group.prefab, freePoint.point.position, freePoint.point.rotation);
+        GameObject spawnedObj = Instantiate(group.Prefab, freePoint.Point.position, freePoint.Point.rotation);
         ISpawnable spawnableComponent = spawnedObj.GetComponent<ISpawnable>();
 
         if (spawnableComponent == null)
@@ -47,8 +47,8 @@ public class ObjectSpawner : MonoBehaviour
             return false;
         }
 
-        group.spawnedObjects.Add(spawnableComponent);
-        freePoint.isOccupied = true;
+        group.SpawnedObjects.Add(spawnableComponent);
+        freePoint.IsOccupied = true;
         _spawnPointMap.Add(spawnableComponent, freePoint);
 
         RegisterSpawnableObject(spawnableComponent, group);
@@ -58,7 +58,7 @@ public class ObjectSpawner : MonoBehaviour
     private SpawnPoint FindFreeSpawnPoint(SpawnPoint[] spawnPoints)
     {
         foreach (var point in spawnPoints)
-            if (point.isOccupied == false)
+            if (point.IsOccupied == false)
                 return point;
 
         return null;
@@ -76,11 +76,11 @@ public class ObjectSpawner : MonoBehaviour
     {
         if (_spawnPointMap.TryGetValue(spawnable, out SpawnPoint point))
         {
-            point.isOccupied = false;
+            point.IsOccupied = false;
             _spawnPointMap.Remove(spawnable);
         }
 
-        group.spawnedObjects.Remove(spawnable);
+        group.SpawnedObjects.Remove(spawnable);
 
         if (_despawnHandlers.TryGetValue(spawnable, out Action unsubscribeAction))
         {
@@ -96,12 +96,12 @@ public class ObjectSpawner : MonoBehaviour
 
         var group = _spawnGroups[groupIndex];
 
-        if (pointIndex < 0 || pointIndex >= group.spawnPoints.Length)
+        if (pointIndex < 0 || pointIndex >= group.SpawnPoints.Length)
             return false;
 
-        var point = group.spawnPoints[pointIndex];
+        var point = group.SpawnPoints[pointIndex];
 
-        if (point.isOccupied)
+        if (point.IsOccupied)
             return false;
 
         return TrySpawnObject(group);
