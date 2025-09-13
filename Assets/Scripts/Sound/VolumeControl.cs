@@ -7,79 +7,73 @@ using UnityEngine.UI;
 
 public class VolumeControl : MonoBehaviour
 {
-    private const string MasterVolume = "MasterVolume";
-    private const string MusicVolume = "MusicVolume";
-    private const string EffectsVolume = "EffectsVolume";
-
-    [SerializeField] private AudioMixerGroup _mixer;
+    [SerializeField] private AudioMixer _mixer;
     [SerializeField] private float _maxVolume = 0f;
     [SerializeField] private float _minVolume = -80f;
-    [SerializeField] private string _masterVolumeButton = MasterVolume + "_Enabled";
 
     private void Start()
     {
         LoadAllVolumes();
     }
 
-    public void ToggleMusic(bool enable)
+    public void ToggleMaster(bool enable)
     {
-        if (enable)
-            _mixer.audioMixer.SetFloat(MasterVolume, _maxVolume);
-        else
-            _mixer.audioMixer.SetFloat(MasterVolume, _minVolume);
+        _mixer.SetFloat(AudioConstants.MasterVolume, enable ? _maxVolume : _minVolume);
 
-        PlayerPrefs.SetInt(_masterVolumeButton, enable ? 1 : 0);
+        PlayerPrefs.SetInt(AudioConstants.MasterVolume + "_Enabled", enable ? 1 : 0);
         PlayerPrefs.Save();
     }
 
     public void ChangeMasterVolume(float volume)
     {
-        _mixer.audioMixer.SetFloat(MasterVolume, Mathf.Lerp(_minVolume, _maxVolume, volume));
+        ChangeVolume(AudioConstants.MasterVolume, volume);
 
-        PlayerPrefs.SetFloat(MasterVolume, volume);
+        PlayerPrefs.SetFloat(AudioConstants.MasterVolume, volume);
         PlayerPrefs.Save();
     }
 
     public void ChangeMusicVolume(float volume)
     {
-        _mixer.audioMixer.SetFloat(MusicVolume, Mathf.Lerp(_minVolume, _maxVolume, volume));
+        ChangeVolume(AudioConstants.MusicVolume, volume);
 
-        PlayerPrefs.SetFloat(MusicVolume, volume);
+        PlayerPrefs.SetFloat(AudioConstants.MusicVolume, volume);
         PlayerPrefs.Save();
     }
 
     public void ChangeEffectVolume(float volume)
     {
-        _mixer.audioMixer.SetFloat(EffectsVolume, Mathf.Lerp(_minVolume, _maxVolume, volume));
+        ChangeVolume(AudioConstants.EffectsVolume, volume);
 
-        PlayerPrefs.SetFloat(EffectsVolume, volume);
+        PlayerPrefs.SetFloat(AudioConstants.EffectsVolume, volume);
         PlayerPrefs.Save();
+    }
+
+    private void ChangeVolume(string parameter, float volume)
+    {
+        _mixer.SetFloat(parameter, Mathf.Lerp(_minVolume, _maxVolume, volume));
     }
 
     private void LoadAllVolumes()
     {
-        if (PlayerPrefs.HasKey(_masterVolumeButton))
+        if (PlayerPrefs.HasKey(AudioConstants.MasterVolume + "_Enabled"))
         {
-            bool isEnabled = PlayerPrefs.GetInt(_masterVolumeButton, 1) == 1;
-            ToggleMusic(isEnabled);
+            bool isEnabled = PlayerPrefs.GetInt(AudioConstants.MasterVolume + "_Enabled", 1) == 1;
+
+            ToggleMaster(isEnabled);
         }
 
-        if (PlayerPrefs.HasKey(MasterVolume))
-        {
-            float volume = PlayerPrefs.GetFloat(MasterVolume, 1f);
-            ChangeMasterVolume(volume);
-        }
+        LoadVolume(AudioConstants.MasterVolume);
+        LoadVolume(AudioConstants.MusicVolume);
+        LoadVolume(AudioConstants.EffectsVolume);
+    }
 
-        if (PlayerPrefs.HasKey(MusicVolume))
+    private void LoadVolume(string volumeKey)
+    {
+        if (PlayerPrefs.HasKey(volumeKey))
         {
-            float volume = PlayerPrefs.GetFloat(MusicVolume, 1f);
-            ChangeMusicVolume(volume);
-        }
+            float volume = PlayerPrefs.GetFloat(volumeKey, 1f);
 
-        if (PlayerPrefs.HasKey(EffectsVolume))
-        {
-            float volume = PlayerPrefs.GetFloat(EffectsVolume, 1f);
-            ChangeEffectVolume(volume);
+            ChangeVolume(volumeKey, volume);
         }
     }
 }
