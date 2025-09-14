@@ -1,9 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.UI;
 
 public class VolumeControl : MonoBehaviour
 {
@@ -27,37 +23,31 @@ public class VolumeControl : MonoBehaviour
     public void ChangeMasterVolume(float volume)
     {
         ChangeVolume(AudioConstants.MasterVolume, volume);
-
-        PlayerPrefs.SetFloat(AudioConstants.MasterVolume, volume);
-        PlayerPrefs.Save();
     }
 
     public void ChangeMusicVolume(float volume)
     {
         ChangeVolume(AudioConstants.MusicVolume, volume);
-
-        PlayerPrefs.SetFloat(AudioConstants.MusicVolume, volume);
-        PlayerPrefs.Save();
     }
 
     public void ChangeEffectVolume(float volume)
     {
         ChangeVolume(AudioConstants.EffectsVolume, volume);
-
-        PlayerPrefs.SetFloat(AudioConstants.EffectsVolume, volume);
-        PlayerPrefs.Save();
     }
 
-    private void ChangeVolume(string parameter, float volume)
+    public void ChangeVolume(string parameter, float volume)
     {
         _mixer.SetFloat(parameter, Mathf.Lerp(_minVolume, _maxVolume, volume));
+
+        PlayerPrefs.SetFloat(parameter, volume);
+        PlayerPrefs.Save();
     }
 
     private void LoadAllVolumes()
     {
         if (PlayerPrefs.HasKey(AudioConstants.MasterVolume + "_Enabled"))
         {
-            bool isEnabled = PlayerPrefs.GetInt(AudioConstants.MasterVolume + "_Enabled", 1) == 1;
+            bool isEnabled = PlayerPrefs.GetInt(AudioConstants.MasterVolume + "_Enabled", AudioConstants.DefaultEnabled) == 1;
 
             ToggleMaster(isEnabled);
         }
@@ -71,7 +61,7 @@ public class VolumeControl : MonoBehaviour
     {
         if (PlayerPrefs.HasKey(volumeKey))
         {
-            float volume = PlayerPrefs.GetFloat(volumeKey, 1f);
+            float volume = PlayerPrefs.GetFloat(volumeKey, AudioConstants.DefaultVolume);
 
             ChangeVolume(volumeKey, volume);
         }

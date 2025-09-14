@@ -1,15 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class VolumeSlider : MonoBehaviour
 {
+    [SerializeField] private string _mixerParameterName;
+
     [SerializeField] private VolumeControl _volumeControl;
-    [SerializeField] private Slider _masterSlider;
-    [SerializeField] private Slider _musicSlider;
-    [SerializeField] private Slider _effectsSlider;
-    [SerializeField] private Toggle _muteToggle;
+    [SerializeField] private Slider _slider;
 
     private void Start()
     {
@@ -19,17 +16,37 @@ public class VolumeSlider : MonoBehaviour
 
     private void SetupSliders()
     {
-        _masterSlider.onValueChanged.AddListener(_volumeControl.ChangeMasterVolume);
-        _musicSlider.onValueChanged.AddListener(_volumeControl.ChangeMusicVolume);
-        _effectsSlider.onValueChanged.AddListener(_volumeControl.ChangeEffectVolume);
-        _muteToggle.onValueChanged.AddListener(_volumeControl.ToggleMaster);
+        _slider.onValueChanged.AddListener(OnSliderValueChanged);
+    }
+
+    private void OnSliderValueChanged(float value)
+    {
+        if (_volumeControl == null || string.IsNullOrEmpty(_mixerParameterName)) 
+            return;
+
+        switch (_mixerParameterName)
+        {
+            case AudioConstants.MasterVolume:
+                _volumeControl.ChangeMasterVolume(value);
+                break;
+            case AudioConstants.MusicVolume:
+                _volumeControl.ChangeMusicVolume(value);
+                break;
+            case AudioConstants.EffectsVolume:
+                _volumeControl.ChangeEffectVolume(value);
+                break;
+            default:
+                _volumeControl.ChangeVolume(_mixerParameterName, value);
+                break;
+        }
     }
 
     private void LoadSavedValues()
     {
-        _masterSlider.value = PlayerPrefs.GetFloat(AudioConstants.MasterVolume, AudioConstants.DefaultVolume);
-        _musicSlider.value = PlayerPrefs.GetFloat(AudioConstants.MusicVolume, AudioConstants.DefaultVolume);
-        _effectsSlider.value = PlayerPrefs.GetFloat(AudioConstants.EffectsVolume, AudioConstants.DefaultVolume);
-        _muteToggle.isOn = PlayerPrefs.GetInt(AudioConstants.MasterVolumeEnabled, AudioConstants.DefaultEnabled) == 1;
+        if (_slider == null || string.IsNullOrEmpty(_mixerParameterName)) 
+            return;
+
+        float savedValue = PlayerPrefs.GetFloat(_mixerParameterName, AudioConstants.DefaultVolume);
+        _slider.value = savedValue;
     }
 }

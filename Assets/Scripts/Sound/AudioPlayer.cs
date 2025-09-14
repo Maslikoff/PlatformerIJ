@@ -6,7 +6,7 @@ public class AudioPlayer : MonoBehaviour
     [SerializeField] private AudioMixerGroup _mixerGroup;
     [SerializeField] private AudioSource _source;
 
-    public void PlaySound(AudioClip clip, float volume = 1f)
+    public void PlaySound(AudioClip clip, float volume = AudioConstants.DefaultVolume)
     {
         _source.outputAudioMixerGroup = _mixerGroup;
         _source.PlayOneShot(clip, volume);

@@ -1,25 +1,33 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MuteSounds : MonoBehaviour
 {
     [SerializeField] private VolumeControl _volumeControl;
+    [SerializeField] private Toggle _toggle;
 
-    public void ToggleMasterMute()
+    private void Start()
     {
-        bool isMuted = PlayerPrefs.GetInt("MasterVolume_Enabled", 1) == 0;
-        _volumeControl.ToggleMaster(isMuted == false);
+        SetupToggle();
+        LoadSavedValue();
     }
 
-    public void SetMute(bool mute)
+    private void SetupToggle()
     {
-        _volumeControl.ToggleMaster(mute == false);
+        _toggle.onValueChanged.AddListener(OnToggleValueChanged);
     }
 
-    public bool IsMuted()
+    private void OnToggleValueChanged(bool isOn)
     {
-        return PlayerPrefs.GetInt("MasterVolume_Enabled", 1) == 0;
+        _volumeControl.ToggleMaster(isOn);
+    }
+
+    private void LoadSavedValue()
+    {
+        if (_toggle == null)
+            return;
+
+        bool isEnabled = PlayerPrefs.GetInt(AudioConstants.MasterVolumeEnabled, AudioConstants.DefaultEnabled) == 1;
+        _toggle.isOn = isEnabled;
     }
 }
