@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SmoothHealthBar : HealthDisplay
+public class HealthBar : HealthDisplay
 {
     private const float MinDifference = 0.001f;
 
