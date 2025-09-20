@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class HealthDisplay : MonoBehaviour
 {
-    [SerializeField] protected Health _health;
+    [SerializeField] protected Health Health;
 
     protected virtual void Start()
     {
@@ -19,14 +19,14 @@ public abstract class HealthDisplay : MonoBehaviour
 
     protected virtual void SubscribeToHealthEvents()
     {
-        _health.HealthChanged += OnHealthChanged;
+        Health.Changed += OnHealthChanged;
     }
 
     protected virtual void UnsubscribeFromHealthEvents()
     {
-        _health.HealthChanged -= OnHealthChanged;
+        Health.Changed -= OnHealthChanged;
     }
 
-    protected abstract void OnHealthChanged(int currentHealth);
+    protected abstract void OnHealthChanged(float currentHealth);
     protected abstract void InitializeDisplay();
 }

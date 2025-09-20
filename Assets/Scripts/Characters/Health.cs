@@ -5,18 +5,18 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {
-    [SerializeField] private int _maxHealth = 100;
-    [SerializeField] private int _currentHealth;
+    [SerializeField] private float _maxValue = 100f;
+    [SerializeField] private float _currentValue;
 
-    public event Action<int> HealthChanged;
-    public event Action<int> DamageTaken;
-    public event Action<int> Healed;
-    public event Action Death;
+    public event Action<float> Changed;
+    public event Action<float> DamageTaken;
+    public event Action<float> Healed;
+    public event Action Died;
 
-    public int CurrentHealth => _currentHealth;
-    public int MaxHealth => _maxHealth;
-    public bool IsAlive => _currentHealth > 0;
-    public float HealthPercentage => (float)_currentHealth / _maxHealth;
+    public float CurrentValue => _currentValue;
+    public float MaxValue => _maxValue;
+    public bool IsAlive => _currentValue > 0;
+    public float Percentage => _currentValue / _maxValue;
 
     private void Start()
     {
@@ -26,10 +26,10 @@ public class Health : MonoBehaviour
     public void Initialize(int maxHealth = -1)
     {
         if (maxHealth > 0)
-            _maxHealth = maxHealth;
+            _maxValue = maxHealth;
 
-        _currentHealth = _maxHealth;
-        HealthChanged?.Invoke(_currentHealth);
+        _currentValue = _maxValue;
+        Changed?.Invoke(_currentValue);
     }
 
     public void TakeDamage(int damage)
@@ -37,49 +37,49 @@ public class Health : MonoBehaviour
         if (IsAlive == false || damage <= 0) 
             return;
 
-        _currentHealth = Mathf.Max(0, _currentHealth - damage);
-        HealthChanged?.Invoke(_currentHealth);
+        _currentValue = Mathf.Max(0, _currentValue - damage);
+        Changed?.Invoke(_currentValue);
         DamageTaken?.Invoke(damage);
 
-        if (_currentHealth <= 0)
+        if (_currentValue <= 0)
             Die();
     }
 
-    public void Heal(int healAmount)
+    public void Heal(float healAmount)
     {
         if (IsAlive == false || healAmount <= 0) 
             return;
 
-        int actualHeal = Mathf.Min(_maxHealth - _currentHealth, healAmount);
-        _currentHealth += actualHeal;
+        float actualHeal = Mathf.Min(_maxValue - _currentValue, healAmount);
+        _currentValue += actualHeal;
 
-        HealthChanged?.Invoke(_currentHealth);
+        Changed?.Invoke(_currentValue);
         Healed?.Invoke(actualHeal);
     }
 
     public void HealFull()
     {
-        Heal(_maxHealth);
+        Heal(_maxValue);
     }
 
-    public void SetHealth(int health)
+    public void SetValue(int health)
     {
-        _currentHealth = Mathf.Clamp(health, 0, _maxHealth);
-        HealthChanged?.Invoke(_currentHealth);
+        _currentValue = Mathf.Clamp(health, 0, _maxValue);
+        Changed?.Invoke(_currentValue);
     }
 
     public void IncreaseMaxHealth(int amount, bool healToFull = false)
     {
-        _maxHealth += amount;
+        _maxValue += amount;
 
         if (healToFull)
-            _currentHealth = _maxHealth;
+            _currentValue = _maxValue;
 
-        HealthChanged?.Invoke(_currentHealth);
+        Changed?.Invoke(_currentValue);
     }
 
     private void Die()
     {
-        Death?.Invoke();
+        Died?.Invoke();
     }
 }

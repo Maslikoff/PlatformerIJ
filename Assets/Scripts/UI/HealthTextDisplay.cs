@@ -8,16 +8,16 @@ public class HealthTextDisplay : HealthDisplay
 
     protected override void InitializeDisplay()
     {
-        UpdateDisplay(_health.CurrentHealth);
+        UpdateDisplay(Health.CurrentValue);
     }
 
-    protected override void OnHealthChanged(int currentHealth)
+    protected override void OnHealthChanged(float currentHealth)
     {
         UpdateDisplay(currentHealth);
     }
 
-    private void UpdateDisplay(int currentHealth)
+    private void UpdateDisplay(float currentHealth)
     {
-        _healthText.text = string.Format(_format, currentHealth, _health.MaxHealth);
+        _healthText.text = string.Format(_format, currentHealth, Health.MaxValue);
     }
 }

@@ -7,16 +7,16 @@ public class InstantHealthBar : HealthDisplay
 
     protected override void InitializeDisplay()
     {
-        UpdateSlider(_health.CurrentHealth);
+        UpdateSlider(Health.CurrentValue);
     }
 
-    protected override void OnHealthChanged(int currentHealth)
+    protected override void OnHealthChanged(float currentHealth)
     {
         UpdateSlider(currentHealth);
     }
 
-    private void UpdateSlider(int currentHealth)
+    private void UpdateSlider(float currentHealth)
     {
-        _healthSlider.value = (float)currentHealth / _health.MaxHealth;
+        _healthSlider.value = currentHealth / Health.MaxValue;
     }
 }
