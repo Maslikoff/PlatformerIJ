@@ -1,11 +1,10 @@
 using UnityEngine;
-using System.Collections;
 
 [RequireComponent(typeof(Mover))]
 [RequireComponent(typeof(Flipper))]
 [RequireComponent(typeof(Patroller))]
 [RequireComponent(typeof(EnemyAnimator))]
-[RequireComponent(typeof(PlayerDetector))]
+[RequireComponent(typeof(TargetDetector))]
 [RequireComponent(typeof(Chaser))]
 public class Enemy : MonoBehaviour
 {
@@ -13,7 +12,7 @@ public class Enemy : MonoBehaviour
     private Flipper _flipper;
     private Patroller _patroller;
     private EnemyAnimator _enemyAnimator;
-    private PlayerDetector _playerDetector;
+    private TargetDetector _playerDetector;
     private Chaser _chaser;
 
     private float _originalMoveSpeed;
@@ -24,7 +23,7 @@ public class Enemy : MonoBehaviour
         _flipper = GetComponent<Flipper>();
         _patroller = GetComponent<Patroller>();
         _enemyAnimator = GetComponent<EnemyAnimator>();
-        _playerDetector = GetComponent<PlayerDetector>();
+        _playerDetector = GetComponent<TargetDetector>();
         _chaser = GetComponent<Chaser>();
 
         _originalMoveSpeed = _mover.GetMoveSpeed();
@@ -49,7 +48,7 @@ public class Enemy : MonoBehaviour
         if (_patroller.HasPoints == false)
             return;
 
-        _playerDetector.DetectPlayer();
+        _playerDetector.DetectTargets();
 
         _chaser.UpdateChase();
 

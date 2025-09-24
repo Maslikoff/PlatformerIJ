@@ -10,8 +10,6 @@ public class VampireAbility : MonoBehaviour
     [SerializeField] private float _cooldownDuration = 4f;
     [SerializeField] private float _damagePlayerSecond = 10f;
     [SerializeField] private float _healPlayerSecond = 10f;
-    [SerializeField] private float _radius = 3f;
-    [SerializeField] private LayerMask _targetLayer;
 
     [Header("Visual")]
     [SerializeField] private SpriteRenderer _radiusIndicator;
@@ -24,8 +22,8 @@ public class VampireAbility : MonoBehaviour
     private float _abilityTimer = 0f;
     private float _cooldownTimer = 0f;
 
+    private TargetDetector _enemyDetector;
     private Health _playerHealth;
-    private List<Health> _enemiesInRange = new List<Health>();
 
     public event Action<float> AbilityProgressChanged;
     public event Action<float> CooldownProgressChanged;
@@ -39,6 +37,7 @@ public class VampireAbility : MonoBehaviour
     private void Awake()
     {
         _playerHealth = GetComponent<Health>();
+        _enemyDetector = GetComponent<TargetDetector>();
         InitializeRadiusIndicator();
     }
 
@@ -98,53 +97,21 @@ public class VampireAbility : MonoBehaviour
 
     private void ProcessVampirism(float timeInterval)
     {
-        FindEnemiesInRange();
+        _enemyDetector.DetectTargets();
 
-        if (_enemiesInRange.Count == 0)
+        if (_enemyDetector.HasTargets == false)
             return;
 
-        Health closestEnemy = GetClosestEnemy();
+        Transform closestTarget = _enemyDetector.ClosestTarget;
 
-        if (closestEnemy != null && closestEnemy.IsAlive)
+        if(closestTarget != null && closestTarget.TryGetComponent(out Health enemyHealth) && enemyHealth.IsAlive)
         {
             float damage = _damagePlayerSecond * timeInterval;
-            closestEnemy.TakeDamage(Mathf.RoundToInt(damage));
+            enemyHealth.TakeDamage(Mathf.RoundToInt(damage));
 
             float healAmount = _healPlayerSecond * timeInterval;
             _playerHealth.Heal(healAmount);
         }
-    }
-
-    private void FindEnemiesInRange()
-    {
-        _enemiesInRange.Clear();
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, _radius, _targetLayer);
-
-        foreach (Collider2D hit in hits)
-            if (hit.TryGetComponent(out Health health) && health != _playerHealth && health.IsAlive)
-                _enemiesInRange.Add(health);
-    }
-
-    private Health GetClosestEnemy()
-    {
-        Health closest = null;
-        float closestDistance = float.MaxValue;
-
-        foreach (var enemy in _enemiesInRange)
-        {
-            if (enemy == null)
-                continue;
-
-            float distance = Vector2.Distance(transform.position, enemy.transform.position);
-
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                closest = enemy;
-            }
-        }
-
-        return closest;
     }
 
     private void UpdateRadiusIndicator()
@@ -202,11 +169,5 @@ public class VampireAbility : MonoBehaviour
         _isOnCooldown = true;
         _cooldownTimer = _cooldownDuration;
         AbilityStateChanged?.Invoke(false);
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, _radius);
     }
 }
