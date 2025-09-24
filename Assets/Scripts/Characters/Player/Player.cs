@@ -7,6 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(Flipper))]
 [RequireComponent(typeof(PlayerAnimator))]
 [RequireComponent(typeof(GroundDetector))]
+[RequireComponent(typeof(VampireAbility))]
 public class Player : MonoBehaviour
 {
     private InputReader _inputReader;
@@ -16,11 +17,13 @@ public class Player : MonoBehaviour
     private Flipper _flipper;
     private PlayerAnimator _playerAnimator;
     private GroundDetector _groundDetector;
+    private VampireAbility _vampireAbility;
 
     public bool IsMoving => _mover.IsMoving;
     public bool IsJumping => _jumper.IsJumping;
     public bool IsGrounded => _groundDetector.IsGrounded;
     public bool IsAttacking { get; private set; }
+    public bool IsUsingVampireAbility => _vampireAbility.IsAbilityActive;
 
     private void Awake()
     {
@@ -31,6 +34,7 @@ public class Player : MonoBehaviour
         _flipper = GetComponent<Flipper>();
         _playerAnimator = GetComponent<PlayerAnimator>();
         _groundDetector = GetComponent<GroundDetector>();
+        _vampireAbility = GetComponent<VampireAbility>();
     }
 
     private void OnEnable()
@@ -38,6 +42,7 @@ public class Player : MonoBehaviour
         _inputReader.MoveInput += HandleMoveInput;
         _inputReader.JumpInput += HandleJumpInput;
         _inputReader.AttackInput += HandleAttackInput;
+        _inputReader.VampireAbilityInput += HandleVampireAbilityInput;
         _attacker.OnAttack += HandleAttackInput;
     }
 
@@ -46,6 +51,7 @@ public class Player : MonoBehaviour
         _inputReader.MoveInput -= HandleMoveInput;
         _inputReader.JumpInput -= HandleJumpInput;
         _inputReader.AttackInput -= HandleAttackInput;
+        _inputReader.VampireAbilityInput -= HandleVampireAbilityInput;
         _attacker.OnAttack -= HandleAttackInput;
     }
 
@@ -70,8 +76,21 @@ public class Player : MonoBehaviour
 
     private void HandleAttackInput()
     {
+        if (IsUsingVampireAbility) 
+            return;
+
         IsAttacking = true;
         _playerAnimator.PlayAttackAnimation();
+        UpdateAnimation();
+    }
+
+    private void HandleVampireAbilityInput()
+    {
+        if (IsAttacking || IsUsingVampireAbility) 
+            return;
+
+        _vampireAbility.TryActivateAbility();
+
         UpdateAnimation();
     }
 

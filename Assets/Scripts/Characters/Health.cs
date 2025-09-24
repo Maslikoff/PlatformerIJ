@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Health : MonoBehaviour
@@ -81,5 +80,29 @@ public class Health : MonoBehaviour
     private void Die()
     {
         Died?.Invoke();
+
+        StartCoroutine(FadeOutCoroutine());
+    }
+
+    private IEnumerator FadeOutCoroutine()
+    {
+        SpriteRenderer sprite = GetComponent<SpriteRenderer>();
+        if (sprite == null) yield break;
+
+        float fadeDuration = 1f;
+        float timer = 0f;
+        Color originalColor = sprite.color;
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
+            sprite.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+            yield return null;
+        }
+
+        sprite.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+
+        Destroy(gameObject);
     }
 }
